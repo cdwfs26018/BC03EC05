@@ -61,6 +61,47 @@ insert_map_block() {
   mv "$tmp_file" "$TFVARS_FILE"
 }
 
+remove_map_block() {
+  local map_name="$1"
+  local key="$2"
+  local tmp_file
+  tmp_file="$(mktemp)"
+
+  awk -v map="$map_name" -v key="$key" '
+    $0 ~ "^" map " = \\{" {
+      in_map = 1
+      map_depth = 0
+    }
+
+    in_map {
+      map_depth += gsub(/\{/, "{")
+      map_depth -= gsub(/\}/, "}")
+
+      if (!skip_block && $0 ~ "^[[:space:]]*" key "[[:space:]]*= *\\{") {
+        skip_block = 1
+        block_depth = 0
+      }
+
+      if (skip_block) {
+        block_depth += gsub(/\{/, "{")
+        block_depth -= gsub(/\}/, "}")
+        if (block_depth == 0) {
+          skip_block = 0
+        }
+        next
+      }
+
+      if (map_depth == 0) {
+        in_map = 0
+      }
+    }
+
+    { print }
+  ' "$TFVARS_FILE" >"$tmp_file"
+
+  mv "$tmp_file" "$TFVARS_FILE"
+}
+
 prompt_required() {
   local label="$1"
   local value=""
@@ -116,8 +157,30 @@ create_rds() {
   terraform_cmd fmt
 }
 
+delete_resource() {
+  local kind name
+
+  kind="$(prompt_required "Type a supprimer (vm ou rds)")"
+  name="$(prompt_required "Nom de l'instance a supprimer")"
+
+  case "$kind" in
+    vm|VM)
+      remove_map_block "instances" "$name"
+      ;;
+    rds|RDS)
+      remove_map_block "rds_instances" "$name"
+      ;;
+    *)
+      printf 'Type inconnu: %s\n' "$kind" >&2
+      exit 1
+      ;;
+  esac
+
+  terraform_cmd fmt
+}
+
 main() {
-  local answer rds_answer apply_answer
+  local answer rds_answer delete_answer apply_answer
 
   read -r -p "Souhaitez-vous creer une nouvelle vm ? [o/N] " answer
   case "$answer" in
@@ -136,6 +199,16 @@ main() {
       ;;
     *)
       printf 'Aucune instance RDS ajoutee.\n'
+      ;;
+  esac
+
+  read -r -p "Souhaitez-vous supprimer une instance ? [o/N] " delete_answer
+  case "$delete_answer" in
+    o|O|oui|Oui|OUI)
+      delete_resource
+      ;;
+    *)
+      printf 'Aucune suppression demandee.\n'
       ;;
   esac
 
