@@ -97,8 +97,27 @@ create_vm() {
   terraform_cmd fmt
 }
 
+create_rds() {
+  local name engine username password block
+
+  name="$(prompt_required "Nom de l'instance RDS")"
+  engine="$(prompt_required "Moteur (postgres ou mariadb)")"
+  username="$(prompt_required "Nom d'utilisateur RDS")"
+  password="$(prompt_required "Mot de passe RDS")"
+
+  block="
+  $(hcl_escape "$name") = {
+    engine   = \"$(hcl_escape "$engine")\"
+    username = \"$(hcl_escape "$username")\"
+    password = \"$(hcl_escape "$password")\"
+  }"
+
+  insert_map_block "rds_instances" "$block"
+  terraform_cmd fmt
+}
+
 main() {
-  local answer apply_answer
+  local answer rds_answer apply_answer
 
   read -r -p "Souhaitez-vous creer une nouvelle vm ? [o/N] " answer
   case "$answer" in
@@ -107,6 +126,16 @@ main() {
       ;;
     *)
       printf 'Aucune VM ajoutee.\n'
+      ;;
+  esac
+
+  read -r -p "Souhaitez-vous creer une instance de moteur de base de donnees ? [o/N] " rds_answer
+  case "$rds_answer" in
+    o|O|oui|Oui|OUI)
+      create_rds
+      ;;
+    *)
+      printf 'Aucune instance RDS ajoutee.\n'
       ;;
   esac
 
