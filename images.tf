@@ -1,12 +1,16 @@
 locals {
   allowed_os_images = {
     ubuntu = {
-      name     = "ubuntu:latest"
-      platform = null
+      name          = "tp-ubuntu:latest"
+      platform      = null
+      build_context = "${path.module}/images/ubuntu"
+      dockerfile    = "Dockerfile"
     }
     arch = {
-      name     = "archlinux:latest"
-      platform = "linux/amd64"
+      name          = "archlinux:latest"
+      platform      = "linux/amd64"
+      build_context = null
+      dockerfile    = null
     }
   }
 }
@@ -17,4 +21,15 @@ resource "docker_image" "os" {
   name         = each.value.name
   keep_locally = true
   platform     = each.value.platform
+
+  dynamic "build" {
+    for_each = each.value.build_context == null ? [] : [each.value]
+
+    content {
+      context     = build.value.build_context
+      dockerfile  = build.value.dockerfile
+      pull_parent = true
+      tag         = [build.value.name]
+    }
+  }
 }
