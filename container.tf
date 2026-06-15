@@ -4,7 +4,7 @@ resource "docker_container" "instance" {
   name  = "tp-${each.key}"
   image = docker_image.os[each.value.os].image_id
 
-  command     = ["sleep", "infinity"]
+  command     = each.value.os == "ubuntu" ? ["/usr/sbin/sshd", "-D", "-e"] : ["sleep", "infinity"]
   cpus        = each.value.cpu_max
   memory      = each.value.mem_max
   memory_swap = each.value.mem_max * 2

@@ -11,3 +11,6 @@ instances = {
     mem_max = 256
   }
 }
+
+default_username = "ubuntu"
+default_password = "ubuntu"

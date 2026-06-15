@@ -28,6 +28,7 @@ resource "docker_image" "os" {
     content {
       context     = build.value.build_context
       dockerfile  = build.value.dockerfile
+      build_args  = local.ubuntu_build_args
       pull_parent = true
       tag         = [build.value.name]
     }

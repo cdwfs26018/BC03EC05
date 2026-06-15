@@ -14,3 +14,13 @@ variable "instances" {
     error_message = "Chaque instance doit demander un OS autorise : ubuntu ou arch."
   }
 }
+
+variable "default_username" {
+  description = "Nom d'utilisateur par defaut configure dans l'image Ubuntu SSH."
+  type        = string
+}
+
+variable "default_password" {
+  description = "Mot de passe par defaut configure dans l'image Ubuntu SSH."
+  type        = string
+}
