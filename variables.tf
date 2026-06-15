@@ -24,3 +24,20 @@ variable "default_password" {
   description = "Mot de passe par defaut configure dans l'image Ubuntu SSH."
   type        = string
 }
+
+variable "rds_instances" {
+  description = "Instances de bases de donnees a provisionner."
+
+  type = map(object({
+    engine   = string
+    username = string
+    password = string
+  }))
+
+  validation {
+    condition = alltrue([
+      for instance in values(var.rds_instances) : contains(["postgres", "mariadb"], instance.engine)
+    ])
+    error_message = "Chaque instance RDS doit utiliser postgres ou mariadb."
+  }
+}

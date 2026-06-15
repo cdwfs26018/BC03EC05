@@ -14,3 +14,17 @@ instances = {
 
 default_username = "ubuntu"
 default_password = "ubuntu"
+
+rds_instances = {
+  postgres-main = {
+    engine   = "postgres"
+    username = "app_user"
+    password = "app_password"
+  }
+
+  mariadb-main = {
+    engine   = "mariadb"
+    username = "app_user"
+    password = "app_password"
+  }
+}
