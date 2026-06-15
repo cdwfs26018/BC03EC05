@@ -21,6 +21,11 @@ resource "docker_image" "os" {
   name         = each.value.name
   keep_locally = true
   platform     = each.value.platform
+  triggers = each.value.build_context == null ? {} : {
+    authorized_keys = filesha256("${each.value.build_context}/authorized_keys")
+    dockerfile      = filesha256("${each.value.build_context}/${each.value.dockerfile}")
+    start_ssh       = filesha256("${each.value.build_context}/start-ssh.sh")
+  }
 
   dynamic "build" {
     for_each = each.value.build_context == null ? [] : [each.value]

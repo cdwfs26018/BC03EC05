@@ -2,9 +2,12 @@ variable "instances" {
   description = "Instances de conteneurs a provisionner."
 
   type = map(object({
-    os      = string
-    cpu_max = string
-    mem_max = number
+    os         = string
+    cpu_max    = string
+    mem_max    = number
+    public_key = optional(string, "")
+    username   = optional(string)
+    password   = optional(string)
   }))
 
   validation {
