@@ -17,6 +17,14 @@ resource "docker_container" "instance" {
   must_run = true
   start    = true
 
+  dynamic "ports" {
+    for_each = each.value.os == "ubuntu" ? [22] : []
+
+    content {
+      internal = ports.value
+    }
+  }
+
   lifecycle {
     precondition {
       condition     = contains(keys(local.allowed_os_images), each.value.os)

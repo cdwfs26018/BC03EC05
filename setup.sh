@@ -216,6 +216,7 @@ main() {
   case "$apply_answer" in
     o|O|oui|Oui|OUI)
       terraform_cmd apply -input=false -auto-approve
+      terraform_cmd output ssh_ports || true
       ;;
     *)
       printf 'terraform.tfvars a ete mis a jour sans appliquer.\n'
